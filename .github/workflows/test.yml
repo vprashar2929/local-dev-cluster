@@ -1,11 +1,5 @@
 name: "units-test"
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - 'releases/*'
-
+on: [push]
 jobs:
   # test local kind start up
   test_localkind:

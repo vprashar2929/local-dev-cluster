@@ -69,7 +69,7 @@ function _get_prometheus_operator_images {
     grep -R "image:" kube-prometheus/manifests/*prometheus-* | awk '{print $3}'
     grep -R "image:" kube-prometheus/manifests/*prometheusOperator* | awk '{print $3}'
     grep -R "prometheus-config-reloader=" kube-prometheus/manifests/ | sed 's/.*=//g'
-    if [ ${GRAFANA_ENABLE,,} == "true" ]; then
+    if [ ${GRAFANA_ENABLE} == "true" ]; then
         grep -R "image:" kube-prometheus/manifests/*grafana* | awk '{print $3}'
     fi
 }
@@ -96,7 +96,7 @@ function _deploy_prometheus_operator {
     for file in $(ls kube-prometheus/manifests/prometheus-*); do
         kubectl create -f $file
     done
-    if [ ${GRAFANA_ENABLE,,} == "true" ]; then
+    if [ ${GRAFANA_ENABLE} == "true" ]; then
         for file in $(ls kube-prometheus/manifests/grafana-*); do
             kubectl create -f $file
         done
@@ -126,7 +126,7 @@ function _fetch_kind() {
     mkdir -p ${KIND_DIR}
     KIND="${KIND_DIR}"/.kind
     if [ -f $KIND ]; then
-        current_kind_version=$($KIND --version |& awk '{print $3}')
+        current_kind_version=$($KIND --version | awk '{print $3}')
     fi
     if [[ $current_kind_version != $KIND_VERSION ]]; then
         echo "Downloading kind v$KIND_VERSION"
@@ -198,7 +198,7 @@ function _setup_kind() {
     _wait_containers_ready kube-system
     _run_registry
 
-    if [ ${PROMETHEUS_ENABLE,,} == "true" ]; then
+    if [ ${PROMETHEUS_ENABLE} == "true" ]; then
         _deploy_prometheus_operator
     fi
 }
