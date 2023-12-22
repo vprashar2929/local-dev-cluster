@@ -1,0 +1,66 @@
+name: Release
+on:
+  push:
+    branches:
+      - "add-wrkflow"
+  # workflow_dispatch:
+  #   # Inputs the workflow accepts.
+  #   inputs:
+  #     tag:
+  #       description: "Tag name, e.g. v0.0.0"
+  #       default: ""
+  #       required: true
+
+jobs:
+  build:
+    name: Upload Release Asset
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Git set user
+        run: |
+          git config  user.name "$USERNAME"
+          git config  user.email "$USERNAME-[bot]@users.noreply.github.com"
+        env:
+          USERNAME: ${{ github.actor }}
+
+      - name: Update the VERSION
+        run: |
+          echo "$VERSION" > VERSION
+        env:
+          # VERSION: ${{ github.event.inputs.tag }}
+           VERSION: "0.0.4"
+
+      - name: Commit bundle changes and tag it
+        run: |
+          git add VERSION
+          git commit -m "ci: update VERSION to $VERSION"
+          git tag -a "v$VERSION" -m "$VERSION"
+          git show --stat
+        env:
+          # VERSION: ${{ github.event.inputs.tag }}
+           VERSION: "0.0.4"
+
+      - name: Push Release tag
+        run: |
+          git push --follow-tags
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ github.event.inputs.tag }}"
+          release_name: "v${{github.event.inputs.tag}}"
+          draft: false
+          prerelease: false
