@@ -82,14 +82,17 @@ wait_for_resource() {
 	info "Waiting for $resource to be in $condition state"
 
 	local -i tries=0
-	while ! kubectl wait --for=condition="$condition" --timeout="2s" \
-		"$resource" "$@" && [[ $tries -lt $max_tries ]]; do
+
+	while [[ $tries -lt $max_tries ]]; do
+		echo "entering into while loop"
+		kubectl wait --for=condition="$condition" --timeout="15s" \
+			"$resource" "$@" && break
 
 		tries=$((tries + 1))
 		echo "   ... [$tries / $max_tries]: waiting ($timeout) for $resource to be $condition"
 		sleep "$timeout"
 	done
-
+	echo "exit to while loop"
 	kubectl wait --for=condition="$condition" "$resource" "$@" --timeout=0 || {
 		fail "$resource $* failed to be in $condition state"
 		return 1
